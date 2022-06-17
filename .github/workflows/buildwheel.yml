@@ -5,11 +5,9 @@ on: [push, pull_request]
 jobs:
   build_wheels:
     name: Build wheels for macos
-    runs-on: ${{ matrix.os }}
+    runs-on: macos-12
     strategy:
       fail-fast: false
-      matrix:
-        os: [macOS-latest]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v2
