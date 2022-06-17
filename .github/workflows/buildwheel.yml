@@ -29,3 +29,42 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           path: wheelhouse/*.whl
+
+  windows_wheels:
+    name: Build wheels for windows-2019
+    runs-on: windows-2019
+    strategy:
+      fail-fast: false
+
+    steps:
+      - name: Setup MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: git mingw-w64-x86_64-cc patch m4 lzip curl tar make diffutils unzip
+      - uses: actions/checkout@v3
+      - name: Checkout ARB repo
+        uses: actions/checkout@v3
+        with:
+          repository: fredrik-johansson/arb
+          path: arb
+      - name: Build Dependencies
+        shell: msys2 {0}
+        run: bin/cibw_before_build_windows.sh
+      
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.3.1
+        env:
+          CIBW_BUILD: cp37-* cp38-* cp39-* cp310-*
+          CIBW_BEFORE_ALL_WINDOWS: bin/cibw_before_build_win.sh
+          CIBW_BEFORE_BUILD: pip install numpy cython
+          CIBW_ENVIRONMENT: >
+            C_INCLUDE_PATH=$(pwd)/.local/include/
+            LIBRARY_PATH=$(pwd)/.local/lib/
+            LD_LIBRARY_PATH=$(pwd)/.local/lib:$LD_LIBRARY_PATH
+          CIBW_TEST_COMMAND: python -c 'import flint; print(str(flint.fmpz(2)))'
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: wheelhouse/*.whl
