@@ -5,12 +5,9 @@ on: [push, pull_request]
 jobs:
   build_wheels:
     name: Build wheels for ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    runs-on: macos-10.15
     strategy:
       fail-fast: false
-      matrix:
-        # os: [ubuntu-20.04, windows-2019, macOS-10.15]
-        os: [ubuntu-20.04, macOS-10.15]
 
     steps:
       - uses: actions/checkout@v3
@@ -25,6 +22,7 @@ jobs:
           CIBW_BEFORE_ALL_LINUX: bin/cibw_before_build_linux.sh
           CIBW_BEFORE_ALL_MACOS: bin/cibw_before_build_macosx.sh
           CIBW_BEFORE_BUILD: pip install numpy cython
+          CIBW_ARCHS_MACOS: x86_64 arm64 universal2
           CIBW_ENVIRONMENT: >
             C_INCLUDE_PATH=$(pwd)/.local/include/
             LIBRARY_PATH=$(pwd)/.local/lib/
@@ -34,27 +32,3 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           path: wheelhouse/*.whl
-
-  test_wheels:
-    needs: build_wheels
-    name: Test ${{ matrix.python-version }} wheel on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-20.04, macOS-10.15]
-        python-version: ['3.7', '3.8', '3.9', '3.10']
-
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-      - uses: actions/download-artifact@v3
-        with:
-          name: artifact
-          path: wheelhouse
-      - run: python -m venv venv
-      - run: venv/bin/pip install -U pip
-      - run: venv/bin/pip install --find-links wheelhouse python_flint
-      - run: venv/bin/python test/test.py
