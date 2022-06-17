@@ -51,7 +51,7 @@ jobs:
           path: arb
       - name: Build Dependencies
         shell: msys2 {0}
-        run: bin/cibw_before_build_windows.sh
+        run: bin/cibw_before_build_win.sh
       
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.3.1
