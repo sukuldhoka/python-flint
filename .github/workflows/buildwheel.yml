@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macOS-12]
+        os: [macOS-12.4]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v2
