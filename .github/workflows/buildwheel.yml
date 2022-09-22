@@ -26,7 +26,7 @@ jobs:
           path: arb
       - name: Build Dependencies
         shell: msys2 {0}
-        run: bin/cibw_before_build_windows.sh
+        run: bin/cibw_before_win.sh
         
       - uses: actions/upload-artifact@v2
         with:
