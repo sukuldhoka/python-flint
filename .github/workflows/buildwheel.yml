@@ -3,32 +3,6 @@ name: Build
 on: [push, pull_request]
 
 jobs:
-  build_wheels:
-    name: Build wheels for macos
-    runs-on: macos-10.15
-    strategy:
-      fail-fast: false
-
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v2
-
-      - name: Build wheels
-        uses: pypa/cibuildwheel@v2.3.1
-        env:
-          CIBW_BUILD: cp37-* cp38-* cp39-* cp310-*
-          CIBW_BEFORE_ALL_MACOS: bin/cibw_before_build_macosx.sh
-          CIBW_BEFORE_BUILD: pip install numpy cython
-          CIBW_ARCHS_MACOS: arm64
-          CIBW_ENVIRONMENT: >
-            C_INCLUDE_PATH=$(pwd)/.local/include/
-            LIBRARY_PATH=$(pwd)/.local/lib/
-            LD_LIBRARY_PATH=$(pwd)/.local/lib:$LD_LIBRARY_PATH
-          CIBW_TEST_COMMAND: python -c 'import flint; print(str(flint.fmpz(2)))'
-
-      - uses: actions/upload-artifact@v2
-        with:
-          path: wheelhouse/*.whl
 
   windows_wheels:
     name: Build wheels for windows-2019
@@ -53,18 +27,6 @@ jobs:
         shell: msys2 {0}
         run: bin/cibw_before_build_win.sh
       
-      - name: Build wheels
-        uses: pypa/cibuildwheel@v2.3.1
-        env:
-          CIBW_BUILD: cp37-* cp38-* cp39-* cp310-*
-          CIBW_BEFORE_ALL_WINDOWS: bin/cibw_before_build_win.sh
-          CIBW_BEFORE_BUILD: pip install numpy cython
-          CIBW_ENVIRONMENT: >
-            C_INCLUDE_PATH=$(pwd)/.local/include/
-            LIBRARY_PATH=$(pwd)/.local/lib/
-            LD_LIBRARY_PATH=$(pwd)/.local/lib:$LD_LIBRARY_PATH
-          CIBW_TEST_COMMAND: python -c 'import flint; print(str(flint.fmpz(2)))'
-
       - uses: actions/upload-artifact@v2
         with:
-          path: wheelhouse/*.whl
+          path: .local/*
