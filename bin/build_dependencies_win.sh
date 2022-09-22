@@ -16,36 +16,38 @@ set -o errexit
 
 USE_GMP=gmp
 
-while [[ $# -gt 0 ]]; do
-    key="$1"
-    case $key in
-    -h | --help)
-        echo "bin/download_dependencies.sh [--gmp gmp|mpir] [--host HOST] [--with-pic]"
-        exit
-        ;;
+while [[ $# -gt 0 ]]
+do
+  key="$1"
+  case $key in
+    -h|--help)
+      echo "bin/download_dependencies.sh [--gmp gmp|mpir] [--host HOST] [--with-pic]"
+      exit
+    ;;
     --gmp)
-        # e.g. --gmp gmp or --gmp mpir
-        USE_GMP="$2"
-        if [[ "$USE_GMP" != "gmp" && "$USE_GMP" != "mpir" ]]; then
-            echo "--gmp option should be gmp or mpir"
-            exit 1
-        fi
-        shift
-        shift
-        ;;
+      # e.g. --gmp gmp or --gmp mpir
+      USE_GMP="$2"
+      if [[ "$USE_GMP" != "gmp" && "$USE_GMP" != "mpir" ]]; then
+        echo "--gmp option should be gmp or mpir"
+        exit 1
+      fi
+      shift
+      shift
+    ;;
     --host)
-        # e.g. --host x86_64-unknown-linux-gnu
-        # or   --host x86_64-apple-darwin
-        HOST_ARG="$2"
-        shift
-        shift
-        ;;
+      # e.g. --host x86_64-unknown-linux-gnu
+      # or   --host x86_64-apple-darwin
+      HOST_ARG="$2"
+      shift
+      shift
+    ;;
     --pic)
-        WITH_PIC="--with-pic"
-        shift
-        ;;
-    esac
+      WITH_PIC="--with-pic"
+      shift
+    ;;
+  esac
 done
+
 
 # ------------------------------------------------------------------------- #
 #                                                                           #
@@ -68,55 +70,65 @@ cd src
 
 if [ $USE_GMP = "gmp" ]; then
 
-    # ----------------------------------------------------------------------- #
-    #                                                                         #
-    #                            GMP                                          #
-    #                                                                         #
-    # ----------------------------------------------------------------------- #
+  # ----------------------------------------------------------------------- #
+  #                                                                         #
+  #                            GMP                                          #
+  #                                                                         #
+  # ----------------------------------------------------------------------- #
 
-    curl -O https://gmplib.org/download/gmp/gmp-$GMPVER.tar.xz
-    tar xf gmp-$GMPVER.tar.xz
-    cd gmp-$GMPVER
+  curl -O https://gmplib.org/download/gmp/gmp-$GMPVER.tar.xz
+  tar xf gmp-$GMPVER.tar.xz
+  cd gmp-$GMPVER
     # Show the output of configfsf.guess
     ./configfsf.guess
-    ./configure --prefix=$PREFIX --enable-fat --enable-shared=yes --enable-static=no --host=$HOST_ARG $WITH_PIC
+    ./configure --prefix=$PREFIX\
+      --enable-fat\
+      --enable-shared=yes\
+      --enable-static=no\
+      --host=$HOST_ARG\
+      $WITH_PIC
     make -j3
     make install
-    cd ..
+  cd ..
 
-    FLINTARB_WITHGMP="--with-gmp=$PREFIX"
+  FLINTARB_WITHGMP="--with-gmp=$PREFIX"
 
 else
 
-    # ----------------------------------------------------------------------- #
-    #                                                                         #
-    #                    YASM (needed to build MPIR)                          #
-    #                                                                         #
-    # ----------------------------------------------------------------------- #
+  # ----------------------------------------------------------------------- #
+  #                                                                         #
+  #                    YASM (needed to build MPIR)                          #
+  #                                                                         #
+  # ----------------------------------------------------------------------- #
 
-    curl -O http://www.tortall.net/projects/yasm/releases/yasm-$YASMVER.tar.gz
-    tar xf yasm-$YASMVER.tar.gz
-    cd yasm-$YASMVER
+  curl -O http://www.tortall.net/projects/yasm/releases/yasm-$YASMVER.tar.gz
+  tar xf yasm-$YASMVER.tar.gz
+  cd yasm-$YASMVER
     ./configure --prefix=$PREFIX
     make -j3
     make install
-    cd ..
+  cd ..
 
-    # ----------------------------------------------------------------------- #
-    #                                                                         #
-    #                            MPIR                                         #
-    #                                                                         #
-    # ----------------------------------------------------------------------- #
+  # ----------------------------------------------------------------------- #
+  #                                                                         #
+  #                            MPIR                                         #
+  #                                                                         #
+  # ----------------------------------------------------------------------- #
 
-    curl -O http://mpir.org/mpir-$MPIRVER.tar.bz2
-    tar xf mpir-$MPIRVER.tar.bz2
-    cd mpir-$MPIRVER
-    ./configure --prefix=$PREFIX --with-yasm=$PREFIX/bin/yasm --enable-fat --enable-shared=yes --enable-static=no --enable-gmpcompat
+  curl -O http://mpir.org/mpir-$MPIRVER.tar.bz2
+  tar xf mpir-$MPIRVER.tar.bz2
+  cd mpir-$MPIRVER
+    ./configure --prefix=$PREFIX\
+      --with-yasm=$PREFIX/bin/yasm\
+      --enable-fat\
+      --enable-shared=yes\
+      --enable-static=no\
+      --enable-gmpcompat
     make -j3
     make install
-    cd ..
+  cd ..
 
-    FLINTARB_WITHGMP="--with-mpir=$PREFIX"
+  FLINTARB_WITHGMP="--with-mpir=$PREFIX"
 
 fi
 
@@ -129,9 +141,14 @@ fi
 curl -O https://ftp.gnu.org/gnu/mpfr/mpfr-$MPFRVER.tar.gz
 tar xf mpfr-$MPFRVER.tar.gz
 cd mpfr-$MPFRVER
-./configure --prefix=$PREFIX --with-gmp=$PREFIX --enable-shared=yes --enable-static=no --host=$HOST_ARG $WITH_PIC
-make -j3
-make install
+  ./configure --prefix=$PREFIX\
+    --with-gmp=$PREFIX\
+    --enable-shared=yes\
+    --enable-static=no\
+    --host=$HOST_ARG\
+    $WITH_PIC
+  make -j3
+  make install
 cd ..
 
 # ------------------------------------------------------------------------- #
@@ -143,9 +160,12 @@ cd ..
 curl -O https://www.flintlib.org/flint-$FLINTVER.tar.gz
 tar xf flint-$FLINTVER.tar.gz
 cd flint-$FLINTVER
-./configure --prefix=$PREFIX $FLINTARB_WITHGMP --with-mpfr=$PREFIX --disable-static
-make -j3
-make install
+  ./configure --prefix=$PREFIX\
+    $FLINTARB_WITHGMP\
+    --with-mpfr=$PREFIX\
+    --disable-static
+  make -j3
+  make install
 cd ..
 
 # ------------------------------------------------------------------------- #
@@ -158,9 +178,13 @@ cd ..
 # mv $ARBVER.tar.gz arb-$ARBVER.tar.gz
 # tar xf arb-$ARBVER.tar.gz
 cd $GITHUB_WORKSPACE/arb
-./configure --prefix=$PREFIX --with-flint=$PREFIX $FLINTARB_WITHGMP --with-mpfr=$PREFIX --disable-static
-make -j3
-make install
+  ./configure --prefix=$PREFIX\
+    --with-flint=$PREFIX\
+    $FLINTARB_WITHGMP\
+    --with-mpfr=$PREFIX\
+    --disable-static
+  make -j3
+  make install
 cd ..
 
 # ------------------------------------------------------------------------- #
@@ -177,9 +201,9 @@ echo $PREFIX
 echo
 echo Versions:
 if [[ $USE_GMP = "gmp" ]]; then
-    echo GMP: $GMPVER
+  echo GMP: $GMPVER
 else
-    echo MPIR: $MPIRVER
+  echo MPIR: $MPIRVER
 fi
 echo MPFR: $MPFRVER
 echo Flint: $FLINTVER
