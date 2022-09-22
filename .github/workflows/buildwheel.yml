@@ -3,13 +3,14 @@ name: Build
 on: [push, pull_request]
 
 jobs:
-
   windows_wheels:
-    name: Build wheels for windows-2019
-    runs-on: windows-2019
+    name: Build wheels for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
-
+      matrix:
+        os: [windows-2019]
+                
     steps:
       - name: Setup MSYS2
         uses: msys2/setup-msys2@v2
@@ -25,8 +26,8 @@ jobs:
           path: arb
       - name: Build Dependencies
         shell: msys2 {0}
-        run: bin/cibw_before_win.sh
-      
+        run: bin/cibw_before_build_windows.sh
+        
       - uses: actions/upload-artifact@v2
         with:
           path: .local/*
